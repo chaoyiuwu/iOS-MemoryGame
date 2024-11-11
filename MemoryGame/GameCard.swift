@@ -11,5 +11,4 @@ struct GameCard {
     var position: Int
     var isMatched: Bool
     var isFaceUp: Bool
-    
 }
