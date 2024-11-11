@@ -49,14 +49,12 @@ class GameViewController: UIViewController {
         }
         return numbers
     }
-
 }
 
 extension GameViewController: UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return cardTotal
     }
-
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CardCell", for: indexPath) as! CardCollectionViewCell
         
@@ -64,31 +62,39 @@ extension GameViewController: UICollectionViewDataSource{
         
         return cell
     }
-    
-    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        print("clicked on " + String(indexPath.row))
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CardCell", for: indexPath) as! CardCollectionViewCell
-        facedUpCards = facedUpCards + 1
-        print("faced up cards: " + String(facedUpCards))
+}
+
+extension GameViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Tapped on card at index \(indexPath.row)")
+            
+        // Check if the card is already matched or face up
+        if cards[indexPath.row].isFaceUp || cards[indexPath.row].isMatched {
+            return
+        }
+            
+        // Face up the tapped card and update the view
+        let cell = collectionView.cellForItem(at: indexPath) as! CardCollectionViewCell
+            facedUpCards += 1
         cards[indexPath.row].isFaceUp = true
         cell.CardArtView.image = UIImage(named: cardArts[indexPath.row])
-        
-        if (facedUpCards >= 3) {
+            
+        // Additional game logic for matching or handling face-up cards
+        if facedUpCards >= 3 {
             print("too many cards facing up")
             for i in 0..<cards.count {
-                if (i != indexPath.row && !cards[i].isMatched && cards[i].isFaceUp){
+                if i != indexPath.row && !cards[i].isMatched && cards[i].isFaceUp {
                     cards[i].isFaceUp = false
                     let indexPath = IndexPath(row: i, section: 0)
-                    let cellToChange = collectionView.dequeueReusableCell(withReuseIdentifier: "CardCell", for: indexPath) as! CardCollectionViewCell
-                                                                    
-                    cellToChange.CardArtView.image = UIImage(named: "background_card")
+                    if let cellToChange = collectionView.cellForItem(at: indexPath) as? CardCollectionViewCell {
+                        cellToChange.CardArtView.image = UIImage(named: "background_card")
+                    }
                 }
             }
             facedUpCards = 1
-        }
-        else {
+        } else {
             for i in 0..<cards.count {
-                if (i != indexPath.row && cards[i].isFaceUp && cardArts[i] == cardArts[indexPath.row]) {
+                if i != indexPath.row && cards[i].isFaceUp && cardArts[i] == cardArts[indexPath.row] {
                     print("match found")
                     cards[indexPath.row].isMatched = true
                     cards[i].isMatched = true
